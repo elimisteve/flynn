@@ -43,11 +43,12 @@ func main() {
 
 // Main represents the main program execution.
 type Main struct {
-	mu        sync.Mutex
-	status    host.DiscoverdConfig
-	store     *server.Store
-	dnsServer *server.DNSServer
-	ln        net.Listener
+	mu         sync.Mutex
+	status     host.DiscoverdConfig
+	store      *server.Store
+	dnsServer  *server.DNSServer
+	httpServer *http.Server
+	ln         net.Listener
 
 	logger *log.Logger
 
@@ -210,6 +211,10 @@ func (m *Main) Run(args ...string) error {
 
 // Close shuts down all open servers.
 func (m *Main) Close() error {
+	if m.httpServer != nil {
+		// Disable keep alives so that persistent connections will close
+		m.httpServer.SetKeepAlivesEnabled(false)
+	}
 	if m.store != nil {
 		m.store.Close()
 		m.store = nil
@@ -296,7 +301,8 @@ func (m *Main) openDNSServer(addr string, recursors, peers []string) error {
 func (m *Main) openHTTPServer(ln net.Listener, peers []string) error {
 	// If we have no store then simply start a proxy handler.
 	if m.store == nil {
-		go http.Serve(ln, &server.ProxyHandler{Peers: peers})
+		m.httpServer = &http.Server{Handler: &server.ProxyHandler{Peers: peers}}
+		go m.httpServer.Serve(ln)
 		return nil
 	}
 
@@ -304,8 +310,8 @@ func (m *Main) openHTTPServer(ln net.Listener, peers []string) error {
 	h := server.NewHandler()
 	h.Main = m
 	h.Store = m.store
-	go http.Serve(ln, h)
-
+	m.httpServer = &http.Server{Handler: h}
+	go m.httpServer.Serve(ln)
 	return nil
 }
 
