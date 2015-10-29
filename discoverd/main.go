@@ -215,10 +215,6 @@ func (m *Main) Close() error {
 		// Disable keep alives so that persistent connections will close
 		m.httpServer.SetKeepAlivesEnabled(false)
 	}
-	if m.store != nil {
-		m.store.Close()
-		m.store = nil
-	}
 	if m.dnsServer != nil {
 		m.dnsServer.Close()
 		m.dnsServer = nil
@@ -226,6 +222,10 @@ func (m *Main) Close() error {
 	if m.ln != nil {
 		m.ln.Close()
 		m.ln = nil
+	}
+	if m.store != nil {
+		m.store.Close()
+		m.store = nil
 	}
 	return nil
 }
