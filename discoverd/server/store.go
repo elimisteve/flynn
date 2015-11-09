@@ -214,7 +214,7 @@ func (s *Store) Open() error {
 }
 
 // Close shuts down the transport and store.
-func (s *Store) Close() error {
+func (s *Store) Close() (last_idx uint64, err error) {
 	// Notify goroutines of closing and wait until they finish.
 	close(s.closing)
 	s.wg.Wait()
@@ -228,6 +228,7 @@ func (s *Store) Close() error {
 	}
 	if s.raft != nil {
 		s.raft.Shutdown().Error()
+		last_idx = s.raft.LastIndex()
 		s.raft = nil
 	}
 	if s.transport != nil {
@@ -239,7 +240,7 @@ func (s *Store) Close() error {
 		s.stableStore = nil
 	}
 
-	return nil
+	return last_idx, nil
 }
 
 // Leader returns the host of the current leader. Returns empty string if there is no leader.
