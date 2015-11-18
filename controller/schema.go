@@ -28,7 +28,7 @@ func migrateDB(db *postgres.DB) error {
     deleted_at timestamptz
 )`,
 
-		`CREATE TYPE deployment_strategy AS ENUM ('all-at-once', 'one-by-one', 'postgres', 'discoverd-meta')`,
+		`CREATE TYPE deployment_strategy AS ENUM ('all-at-once', 'one-by-one', 'postgres')`,
 
 		`CREATE TABLE apps (
     app_id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -209,6 +209,9 @@ $$ LANGUAGE plpgsql`,
 	)
 	m.Add(5,
 		`ALTER TABLE deployments ADD COLUMN deploy_timeout integer NOT NULL DEFAULT 30`,
+	)
+	m.Add(6,
+		`INSERT INTO deployment_strategies (name) VALUES ('discoverd-meta')`,
 	)
 	return m.Migrate(db)
 }
