@@ -104,7 +104,7 @@ func (m *Main) Run(args ...string) error {
 	// address perform a deployment by starting a proxy DNS server
 	// and shutting down the old discoverd job
 	var deploy *dd.Deployment
-	var last_idx uint64
+	var lastIdx uint64
 
 	target := fmt.Sprintf("http://%s:1111", opt.Host)
 	m.logger.Println("Trying to connect to:", target)
@@ -138,7 +138,7 @@ func (m *Main) Run(args ...string) error {
 		}
 		m.logger.Printf("discoverd listening for DNS on %s", addr)
 
-		last_idx, err = discoverd.NewClientWithURL(target).Shutdown()
+		lastIdx, err = discoverd.NewClientWithURL(target).Shutdown()
 		if err != nil {
 			return err
 		}
@@ -157,9 +157,9 @@ func (m *Main) Run(args ...string) error {
 	}
 
 	// Wait for the store to catchup before switching to local store if we are doing a deployment
-	if m.store != nil && last_idx > 0 {
-		for m.store.LastIndex() < last_idx {
-			m.logger.Println("Waiting for store to catchup, current:", m.store.LastIndex(), "target:", last_idx)
+	if m.store != nil && lastIdx > 0 {
+		for m.store.LastIndex() < lastIdx {
+			m.logger.Println("Waiting for store to catchup, current:", m.store.LastIndex(), "target:", lastIdx)
 			time.Sleep(100 * time.Millisecond)
 		}
 	}
@@ -245,7 +245,7 @@ func waitHostDNSConfig() (addr string, resolvers []string) {
 }
 
 // Close shuts down all open servers.
-func (m *Main) Close() (last_idx uint64, err error) {
+func (m *Main) Close() (lastIdx uint64, err error) {
 	if m.httpServer != nil {
 		// Disable keep alives so that persistent connections will close
 		m.httpServer.SetKeepAlivesEnabled(false)
@@ -259,10 +259,10 @@ func (m *Main) Close() (last_idx uint64, err error) {
 		m.ln = nil
 	}
 	if m.store != nil {
-		last_idx, err = m.store.Close()
+		lastIdx, err = m.store.Close()
 		m.store = nil
 	}
-	return last_idx, err
+	return lastIdx, err
 }
 
 // openStore initializes and opens the store.
