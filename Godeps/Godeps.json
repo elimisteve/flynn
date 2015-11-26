@@ -402,6 +402,10 @@
 			"Rev": "737f00726577c26beb71037b273e79a65b354c85"
 		},
 		{
+			"ImportPath": "github.com/flynn/raft",
+			"Rev": "9b7f81e5c7d90fc4c9c3cf6e19291f9ca8d21b09"
+		},
+		{
 			"ImportPath": "github.com/flynn/tail",
 			"Rev": "165e62b6a7aefaaa964b678ee167abeaa152c47e"
 		},
@@ -437,10 +441,6 @@
 		{
 			"ImportPath": "github.com/hashicorp/go-msgpack/codec",
 			"Rev": "fa3f63826f7c23912c15263591e65d54d080b458"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/raft",
-			"Rev": "9dabbbab966c04a0b6efed3cff6960299fed0642"
 		},
 		{
 			"ImportPath": "github.com/hashicorp/raft-boltdb",

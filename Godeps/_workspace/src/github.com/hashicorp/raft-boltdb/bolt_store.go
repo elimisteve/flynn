@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/flynn/flynn/Godeps/_workspace/src/github.com/boltdb/bolt"
-	"github.com/flynn/flynn/Godeps/_workspace/src/github.com/hashicorp/raft"
+	"github.com/flynn/flynn/Godeps/_workspace/src/github.com/flynn/raft"
 )
 
 const (

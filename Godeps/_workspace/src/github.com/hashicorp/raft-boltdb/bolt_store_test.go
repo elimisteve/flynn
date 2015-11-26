@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/flynn/flynn/Godeps/_workspace/src/github.com/boltdb/bolt"
-	"github.com/flynn/flynn/Godeps/_workspace/src/github.com/hashicorp/raft"
+	"github.com/flynn/flynn/Godeps/_workspace/src/github.com/flynn/raft"
 )
 
 func testBoltStore(t testing.TB) *BoltStore {
