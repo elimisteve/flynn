@@ -79,16 +79,6 @@ func (m *Main) Run(args ...string) error {
 		return err
 	}
 
-	// Open listener.
-	ln, err := net.Listen("tcp4", opt.Addr)
-	if err != nil {
-		return err
-	}
-	m.ln = ln
-
-	// Multiplex listener to store and http api.
-	storeLn, httpLn := server.Mux(ln)
-
 	// Set up advertised address and default peer set.
 	advertiseAddr := MergeHostPort(opt.Host, opt.Addr)
 	if len(opt.Peers) == 0 {
@@ -96,7 +86,7 @@ func (m *Main) Run(args ...string) error {
 	}
 
 	// Create a slice of peers with their HTTP address set instead.
-	httpPeers, err := SetPortSlice(opt.Peers, opt.HTTPAddr)
+	httpPeers, err := SetPortSlice(opt.Peers, opt.Addr)
 	if err != nil {
 		return fmt.Errorf("set port slice: %s", err)
 	}
@@ -146,6 +136,16 @@ func (m *Main) Run(args ...string) error {
 		m.logger.Println("failed to contact existing discoverd server, starting up without takeover")
 	}
 
+	// Open listener.
+	ln, err := net.Listen("tcp4", opt.Addr)
+	if err != nil {
+		return err
+	}
+	m.ln = ln
+
+	// Multiplex listener to store and http api.
+	storeLn, httpLn := server.Mux(ln)
+
 	// Open store if we are not proxying.
 	if err := m.openStore(opt.DataDir, storeLn, advertiseAddr, opt.Peers); err != nil {
 		return fmt.Errorf("Failed to open store: %s", err)
@@ -194,7 +194,7 @@ func (m *Main) Run(args ...string) error {
 		}()
 	}
 
-	if err := m.openHTTPServer(opt.HTTPAddr, opt.Peers); err != nil {
+	if err := m.openHTTPServer(httpLn, opt.Peers); err != nil {
 		return fmt.Errorf("Failed to start HTTP server: %s", err)
 	}
 
@@ -259,7 +259,6 @@ func (m *Main) Close() (info dt.ShutdownInfo, err error) {
 		m.ln.Close()
 		m.ln = nil
 	}
-	var lastIdx uint64
 	if m.store != nil {
 		info.LastIndex, err = m.store.Close()
 		m.store = nil
