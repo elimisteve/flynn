@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync/atomic"
 
 	"github.com/flynn/flynn/Godeps/_workspace/src/github.com/julienschmidt/httprouter"
 	"github.com/flynn/flynn/discoverd/client"
@@ -23,7 +24,9 @@ const StreamBufferSize = 64 // TODO: Figure out how big this buffer should be.
 // NewHandler returns a new instance of Handler.
 func NewHandler() *Handler {
 	r := httprouter.New()
+
 	h := &Handler{Handler: r}
+	h.Shutdown.Store(false)
 
 	if os.Getenv("DEBUG") != "" {
 		h.Handler = hh.ContextInjector("discoverd", hh.NewRequestLogger(h.Handler))
@@ -59,7 +62,8 @@ func NewHandler() *Handler {
 // Handler represents an HTTP handler for the Store.
 type Handler struct {
 	http.Handler
-	Main interface {
+	Shutdown atomic.Value // bool
+	Main     interface {
 		Close() (dt.ShutdownInfo, error)
 	}
 	Store interface {
@@ -79,6 +83,15 @@ type Handler struct {
 		AddPeer(peer string) error
 		RemovePeer(peer string) error
 	}
+}
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if h.Shutdown.Load().(bool) {
+		hh.Error(w, ErrShutdown)
+		return
+	}
+	h.Handler.ServeHTTP(w, r)
+	return
 }
 
 // servePutService creates a service.
@@ -312,6 +325,7 @@ func (h *Handler) serveGetLeader(w http.ResponseWriter, r *http.Request, params 
 func (h *Handler) servePing(w http.ResponseWriter, r *http.Request, params httprouter.Params) {}
 
 func (h *Handler) serveShutdown(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	h.Shutdown.Store(true)
 	lastIdx, err := h.Main.Close()
 	if err != nil {
 		hh.Error(w, err)

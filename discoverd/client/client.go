@@ -50,8 +50,7 @@ func NewClientWithURL(url string) *Client {
 			URL: url,
 			HTTP: &http.Client{
 				Transport: &http.Transport{
-					Dial:              dialer.Retry.Dial,
-					DisableKeepAlives: true,
+					Dial: dialer.Retry.Dial,
 				},
 				CheckRedirect: redirectPreserveHeaders,
 			},
