@@ -210,5 +210,8 @@ $$ LANGUAGE plpgsql`,
 	m.Add(5,
 		`ALTER TABLE deployments ADD COLUMN deploy_timeout integer NOT NULL DEFAULT 30`,
 	)
+	m.Add(6,
+		`ALTER TABLE formations ADD COLUMN tags jsonb`,
+	)
 	return m.Migrate(db)
 }
