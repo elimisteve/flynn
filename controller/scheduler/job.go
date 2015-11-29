@@ -92,6 +92,17 @@ type Job struct {
 	metadata map[string]string
 }
 
+// TagsMatchHost checks whether all of the job's tags match the corresponding
+// host's tags
+func (j *Job) TagsMatchHost(host *Host) bool {
+	for k, v := range j.Formation.Tags[j.Type] {
+		if w, ok := host.Tags[k]; !ok || v != w {
+			return false
+		}
+	}
+	return true
+}
+
 // needsVolume indicates whether a volume should be provisioned in the cluster
 // for the job, determined from the corresponding process type in the release
 func (j *Job) needsVolume() bool {
@@ -169,8 +180,9 @@ func (js Jobs) GetProcesses(key utils.FormationKey) Processes {
 	return procs
 }
 
-func (js Jobs) Add(j *Job) {
+func (js Jobs) Add(j *Job) *Job {
 	js[j.ID] = j
+	return j
 }
 
 // TODO refactor `state` to JobStatus type and consolidate statuses across scheduler/controller/host
