@@ -487,7 +487,6 @@ func (TestSuite) TestStopJob(c *C) {
 				"job2": &Job{ID: "job2", Formation: formation, Type: "web", state: JobStateRunning, startedAt: recent},
 			},
 			shouldStop: "job1",
-			jobCheck:   func(job *Job) { c.Assert(job.state, Equals, JobStateStopped) },
 		},
 		{
 			desc: "one running and one new, stops new job",
@@ -496,7 +495,6 @@ func (TestSuite) TestStopJob(c *C) {
 				"job2": &Job{ID: "job2", Formation: formation, Type: "web", state: JobStateRunning, startedAt: recent},
 			},
 			shouldStop: "job1",
-			jobCheck:   func(job *Job) { c.Assert(job.state, Equals, JobStateStopped) },
 		},
 	} {
 		s.jobs = t.jobs
@@ -507,9 +505,6 @@ func (TestSuite) TestStopJob(c *C) {
 			continue
 		}
 		c.Assert(job.ID, Equals, t.shouldStop, Commentf(t.desc))
-		if t.jobCheck != nil {
-			t.jobCheck(job)
-		}
 	}
 }
 
