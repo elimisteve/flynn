@@ -1031,7 +1031,6 @@ func (s *Scheduler) handleFormation(ef *ct.ExpandedFormation) (formation *Format
 }
 
 func (s *Scheduler) triggerRectify(key utils.FormationKey) {
-	logger.Info("triggering rectify", "key", key)
 	s.rectifyBatch[key] = struct{}{}
 	select {
 	case s.rectify <- struct{}{}:
@@ -1235,14 +1234,12 @@ func (s *Scheduler) tickSyncHosts(d time.Duration) {
 }
 
 func (s *Scheduler) rectifyAll() {
-	logger.Info("triggering rectify for all formations")
 	for key := range s.formations {
 		s.triggerRectify(key)
 	}
 }
 
 func (s *Scheduler) triggerSyncJobs() {
-	logger.Info("triggering job sync")
 	select {
 	case s.syncJobs <- struct{}{}:
 	default:
@@ -1250,7 +1247,6 @@ func (s *Scheduler) triggerSyncJobs() {
 }
 
 func (s *Scheduler) triggerSyncFormations() {
-	logger.Info("triggering formation sync")
 	select {
 	case s.syncFormations <- struct{}{}:
 	default:
@@ -1258,7 +1254,6 @@ func (s *Scheduler) triggerSyncFormations() {
 }
 
 func (s *Scheduler) triggerSyncHosts() {
-	logger.Info("triggering host sync")
 	select {
 	case s.syncHosts <- struct{}{}:
 	default:
@@ -1266,7 +1261,6 @@ func (s *Scheduler) triggerSyncHosts() {
 }
 
 func (s *Scheduler) triggerHostChecks() {
-	logger.Info("triggering host checks")
 	select {
 	case s.hostChecks <- struct{}{}:
 	default:
